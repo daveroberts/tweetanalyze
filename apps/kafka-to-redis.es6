@@ -1,4 +1,5 @@
 var kafka = require('kafka-node');
+var _ = require('lodash');
 
 var topic = 'twitter-raw';
 
@@ -12,8 +13,19 @@ consumer.on('message', function(message){
   var tweet = JSON.parse(message.value);
   var tag = {};
   for(tag of tweet.entities.hashtags){
-    redis.zincrby("hashtags", 1, tag.text.toUpperCase());
-    console.log("[Redis] ("+Date.now()/1+") Recorded tweet with tag: " + tag.text);
+    var hashtag = tag.text.toLowerCase();
+    redis.zincrby("hashtags", 1, hashtag);
+    var range = _.range(1,hashtag.length);
+    var parts = _.map(range,function(l){
+      return hashtag.substring(0,l);
+    });
+    var part = "";
+    for(part of parts){
+      // dave -> parts ['d','da','dav']
+      redis.zadd('compl', 0, part);
+    }
+    redis.zadd('compl',0,hashtag+"*")
+    console.log("[Redis] ("+Date.now()/1+") Recorded tweet with tag: " + hashtag);
   }
   var time_zone = "(None)";
   if (tweet.user.time_zone){ time_zone = tweet.user.time_zone; }

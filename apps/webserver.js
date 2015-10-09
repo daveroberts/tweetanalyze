@@ -54,6 +54,25 @@ app.get('/stats', function(req, res){
   });
 });
 
+app.get('/suggestions', function(req, res){
+  var max = 5;
+  var rangelen = 50; // keep this under MTU
+  var q = req.query.q;
+  var suggestions = [];
+  redis.zrank('compl', q, function(err,rank){
+    if (!rank){ res.send(JSON.stringify(suggestions)); return; }
+    redis.zrange('compl',rank,rank+rangelen-1, function(err,range){
+      for(i in range){
+        if (range[i].indexOf("*") >= 0 && range[i].indexOf(q) == 0){
+          suggestions.push(range[i].substring(0,range[i].length-1));
+        }
+      }
+      res.send(JSON.stringify(suggestions));
+      return;
+    });
+  });
+});
+
 var server = app.listen(4000, function () {
   var host = server.address().address;
   var port = server.address().port;
