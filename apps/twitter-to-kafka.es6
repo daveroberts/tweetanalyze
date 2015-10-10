@@ -16,3 +16,7 @@ producer.on('ready', function(){
     }
   });
 });
+
+producer.on('error', function(err){
+  console.log("Err: "+err);
+});
