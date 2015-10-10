@@ -14,7 +14,7 @@
 
 <form method="get" action="/suggestions">
   <label>Search: </label>
-  <input type="text" id="q" name="q" />
+  <input type="text" id="q" name="q" autocomplete="off" />
   <input type="submit" value="Search" />
 </form>
 <div id="suggestions"></div>
@@ -23,7 +23,11 @@
 <script type="text/javascript">
   jQuery('#q').keyup(function(){
     jQuery.get("/suggestions?q="+jQuery('#q').val(), function(data){
-      $('#suggestions').text(data);
+      $('#suggestions').text("");
+      data = JSON.parse(data);
+      data.forEach(function(item){
+        $('#suggestions').append("<div><a href='/tag/"+item+"'>"+item+"</a></div>");
+      });
     });
   });
 </script>

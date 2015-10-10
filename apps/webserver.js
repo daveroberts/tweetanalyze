@@ -54,19 +54,43 @@ app.get('/stats', function(req, res){
   });
 });
 
+app.get("/tag/:hashtag");
+
+var async = require('async');
+
 app.get('/suggestions', function(req, res){
-  var max = 5;
+  var max = 10;
   var rangelen = 50; // keep this under MTU
   var q = req.query.q;
   var suggestions = [];
+  var nomore = false;
   redis.zrank('compl', q, function(err,rank){
     if (!rank){ res.send(JSON.stringify(suggestions)); return; }
-    redis.zrange('compl',rank,rank+rangelen-1, function(err,range){
-      for(i in range){
-        if (range[i].indexOf("*") >= 0 && range[i].indexOf(q) == 0){
-          suggestions.push(range[i].substring(0,range[i].length-1));
+    async.until(function(){
+      // until you return true here
+      return (nomore) || (suggestions.length >= max);
+    },function(done){
+      // this code is called again and again
+      redis.zrange('compl',rank,rank+rangelen-1, function(err,range){
+        if (err){
+          res.send("[]");
+          return;
         }
-      }
+        rank = rank + rangelen;
+        for(i in range){
+          if(range[i].indexOf(q) == 0){
+            if (range[i].indexOf("*") >= 0){
+              var suggest = range[i].substring(0,range[i].length-1);
+              suggestions.push(suggest);
+            }
+          } else {
+            nomore = true;
+          }
+        }
+        done();
+      });
+    },function(){
+      // you have access to the final stuff here
       res.send(JSON.stringify(suggestions));
       return;
     });

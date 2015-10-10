@@ -10,9 +10,17 @@
 6. Copy config/tweetanalyze.js.example to config/tweetanalyze.js.  Popualte with your twitter credentials.
 6. Run `node start.js`
 
+## Done
+
+1. The sub processes are spawned using pm2, and you can control them in the web application.
+
 ## Todo
 
-1. gulp doesn't quite serve the way I want it to.  When you change a file, the browser doesn't automatically reload.  The configuration is copied from elsewhere.  I may just do it manually.
+1. When you change a file, have the web server reload and browser reload(gulp and browser sync).
+1. When you change a view, have the brower reload.
 2. Send updates to the client via socket.io.  Update page with React and RxJS.
+4. When a job fails to start or crashes, display the log in the web application
+5. Be able to schedule jobs (process control) within the application.
+
+## Maybe
 3. The tasks in app.js are run when the application is run.  I would prefer to have them run on Apache Storm or Samza.  I was having some trouble getting this to work locally
-4. Job scheduler for tasks in #3.  If Storm or Samza are used, this may not be necessary.
