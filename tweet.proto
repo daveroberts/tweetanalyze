@@ -1,0 +1,27 @@
+message Tweet {
+  required int32 id = 1;
+  required string text = 2;
+  repeated string hashtags = 3;
+  required string created_at = 4;
+  message User {
+    required int32 id = 1;
+    optional string name = 2;
+    optional string screen_name = 3;
+    optional string description = 4;
+    required string created_at = 5;
+    optional string time_zone = 6;
+  }
+  required User user = 5;
+  optional string lang = 6;
+  message Place {
+    required int32 id = 1;
+    optional string place_type = 2;
+    optional string name = 3;
+    optional string country_code = 4;
+    optional string country = 5;
+  }
+  optional Place place = 7;
+  optional string filter_level = 8;
+  optional bool retweeted = 9;
+  optional bool favorited = 10;
+}
