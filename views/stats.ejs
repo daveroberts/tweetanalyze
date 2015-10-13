@@ -19,6 +19,9 @@
 </form>
 <div id="suggestions"></div>
 
+<div id="tweets">
+</div>
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script type="text/javascript">
   jQuery('#q').keyup(function(){
@@ -29,5 +32,14 @@
         $('#suggestions').append("<div><a href='/tag/"+item+"'>"+item+"</a></div>");
       });
     });
+  });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.js"></script>
+<script>
+  var socket = io('http://localhost:8080');
+  socket.on('tweet', function (data) {
+    $('#tweets').prepend("<div>"+data+"</div>");
+    console.log(data);
   });
 </script>

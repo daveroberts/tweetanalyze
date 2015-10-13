@@ -15,7 +15,7 @@ consumer.on('message', function(message){
   for(tag of tweet.entities.hashtags){
     var hashtag = tag.text.toLowerCase();
     redis.zincrby("hashtags", 1, hashtag);
-    var range = _.range(1,hashtag.length);
+    var range = _.range(1,hashtag.length+1);
     var parts = _.map(range,function(l){
       return hashtag.substring(0,l);
     });
@@ -25,6 +25,8 @@ consumer.on('message', function(message){
       redis.zadd('compl', 0, part);
     }
     redis.zadd('compl',0,hashtag+"*")
+    redis.sadd('hashtag-to-tweet-ids#'+hashtag, tweet.id);
+    redis.set('tweet-id-to-text#'+tweet.id, tweet.text);
     console.log("[Redis] ("+Date.now()/1+") Recorded tweet with tag: " + hashtag);
   }
   var time_zone = "(None)";

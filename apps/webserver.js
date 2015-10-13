@@ -7,7 +7,7 @@ var libredis = require("redis");
 var redis = libredis.createClient();
 
 pm2.connect();
-app.set('view engine', 'ejs'); 
+app.set('view engine', 'ejs');
 app.use(bodyParser());
 
 var apps = ['webserver', 'twitter-to-kafka', "kafka-to-redis"]
@@ -54,14 +54,32 @@ app.get('/stats', function(req, res){
   });
 });
 
-app.get("/tag/:hashtag");
+var hashtag = "";
+app.param('hashtag', function (req, res, next, value) {
+  hashtag = value;
+  next();
+})
 
 var async = require('async');
+
+app.get("/tag/:hashtag", function(req, res){
+  redis.smembers('hashtag-to-tweet-ids#'+hashtag, function(err, tweetids){
+    var keys = _.map(tweetids, function(id){return "tweet-id-to-text#"+id;});
+    async.map(keys, function(key, cb){
+      redis.get(key, function(err, val){
+        cb(null, val);
+      });
+    }, function(err, results){
+      res.send(JSON.stringify(results));
+    });
+  });
+});
 
 app.get('/suggestions', function(req, res){
   var max = 10;
   var rangelen = 50; // keep this under MTU
   var q = req.query.q;
+  console.log("q: "+q);
   var suggestions = [];
   var nomore = false;
   redis.zrank('compl', q, function(err,rank){
@@ -72,12 +90,14 @@ app.get('/suggestions', function(req, res){
     },function(done){
       // this code is called again and again
       redis.zrange('compl',rank,rank+rangelen-1, function(err,range){
+        console.log("Err: "+err);
         if (err){
           res.send("[]");
           return;
         }
         rank = rank + rangelen;
         for(i in range){
+          console.log("i: "+i+" range[i]: "+range[i]+" index1: "+range[i].indexOf(q)+" index2: "+range[i].indexOf("*"));
           if(range[i].indexOf(q) == 0){
             if (range[i].indexOf("*") >= 0){
               var suggest = range[i].substring(0,range[i].length-1);
