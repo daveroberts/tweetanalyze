@@ -1,7 +1,12 @@
 var kafka = require('kafka-node');
 var _ = require('lodash');
+var protobuf = require("protobufjs");
 
 var topic = 'twitter-raw';
+var builder = protobuf.loadProtoFile("tweet.proto");
+var Tweet = builder.build("Tweet")
+var User = builder.build("User")
+var Place = builder.build("Place")
 
 var consumer = new kafka.Consumer(new kafka.Client(), [{topic: topic, offset: 0}], {fromOffset: true, "consumer.timeout.ms" : 3000});
 var libredis = require("redis");
@@ -10,10 +15,10 @@ var redis = libredis.createClient();
 redis.flushdb();
 
 consumer.on('message', function(message){
-  var tweet = JSON.parse(message.value);
-  var tag = {};
-  for(tag of tweet.entities.hashtags){
-    var hashtag = tag.text.toLowerCase();
+  console.log(message.value);
+  process.exit(0);
+  var tweet = Tweet.decode(message.value);
+  for(hashtag of tweet.hashtags){
     redis.zincrby("hashtags", 1, hashtag);
     var range = _.range(1,hashtag.length+1);
     var parts = _.map(range,function(l){

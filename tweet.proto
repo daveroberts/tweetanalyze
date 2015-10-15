@@ -1,10 +1,10 @@
 message Tweet {
-  required int32 id = 1;
+  required string id_str = 1;
   required string text = 2;
   repeated string hashtags = 3;
   required string created_at = 4;
   message User {
-    required int32 id = 1;
+    required string id_str = 1;
     optional string name = 2;
     optional string screen_name = 3;
     optional string description = 4;
@@ -14,7 +14,7 @@ message Tweet {
   required User user = 5;
   optional string lang = 6;
   message Place {
-    required int32 id = 1;
+    required string id = 1;
     optional string place_type = 2;
     optional string name = 3;
     optional string country_code = 4;
