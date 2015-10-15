@@ -1,6 +1,7 @@
 var kafka = require('kafka-node');
 var _ = require('lodash');
 var protobuf = require("protobufjs");
+var conv = require('binstring');
 
 var topic = 'twitter-raw';
 var builder = protobuf.loadProtoFile("tweet.proto");
@@ -15,9 +16,7 @@ var redis = libredis.createClient();
 redis.flushdb();
 
 consumer.on('message', function(message){
-  console.log(message.value);
-  process.exit(0);
-  var tweet = Tweet.decode(message.value);
+  var tweet = Tweet.decode(conv(message.value, {in:'hex', out:'buffer'}));
   for(hashtag of tweet.hashtags){
     redis.zincrby("hashtags", 1, hashtag);
     var range = _.range(1,hashtag.length+1);

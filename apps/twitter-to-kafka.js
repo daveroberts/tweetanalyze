@@ -2,6 +2,7 @@ var config = require('../config/tweetanalyze')
 var Twitter = require('twitter')
 var kafka = require('kafka-node')
 var protobuf = require("protobufjs");
+var conv = require('binstring');
 
 var twitter = new Twitter(config.twitter)
 var io = require('socket.io')(8080)
@@ -20,6 +21,7 @@ producer.on('ready', function(){
       debug = tweet;
       var buf = tweet_to_buffer(tweet);
       if (buf){
+        console.log(buf);
         producer.send([{topic: topic, messages: buf}], function(err, data){
           process.stdout.write("t");
           //console.log(tweet.text);
@@ -72,5 +74,5 @@ function tweet_to_buffer(ltweet){
   jtweet.favorited = ltweet.favorited;
   var t = new Tweet(jtweet);
   var buf = t.encode();
-  return buf;
+  return conv(buf, { in:'buffer', out:'hex' });
 }
