@@ -50,7 +50,9 @@ app.get('/stats', function(req, res){
       topTags.push([obj[i], obj[i+1]]);
       i = i + 2;
     }
-    res.render('stats', {topTags: topTags})
+    redis.sinter("", function(err, intersection){
+      res.render('stats', {topTags: topTags, allDays: intersection})
+    });
   });
 });
 

@@ -21,9 +21,8 @@ producer.on('ready', function(){
       debug = tweet;
       var buf = tweet_to_buffer(tweet);
       if (buf){
-        console.log(buf);
         producer.send([{topic: topic, messages: buf}], function(err, data){
-          process.stdout.write("t");
+          process.stdout.write(buf);
           //console.log(tweet.text);
           io.emit('tweet', tweet.text)
         })
@@ -46,7 +45,12 @@ function tweet_to_buffer(ltweet){
   var jtweet = {};
   jtweet.id_str = ltweet.id_str;
   jtweet.text = ltweet.text;
-  jtweet.created_at = ltweet.text;
+  var dCreated = new Date(ltweet.created_at);
+  var max = 7*24*60*60*1000;
+  var variance = Math.random() * (2*max) - max;
+  var timestamp = dCreated.getTime();
+  var newDate = new Date(timestamp + variance);
+  jtweet.created_at = newDate.toString();
   jtweet.hashtags = [];
   if (ltweet.entities.hashtags.length > 0){
     ltweet.entities.hashtags.forEach(function(tag) {
