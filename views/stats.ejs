@@ -1,3 +1,10 @@
+<form method="get" action="/suggestions">
+  <label>Search: </label>
+  <input type="text" id="q" name="q" autocomplete="off" />
+  <input type="submit" value="Search" />
+</form>
+<div id="suggestions"></div>
+
 <h1>Top Tags</h1>
 <table>
   <thead>
@@ -11,13 +18,6 @@
       </tr>
     <% } %>
 </table>
-
-<form method="get" action="/suggestions">
-  <label>Search: </label>
-  <input type="text" id="q" name="q" autocomplete="off" />
-  <input type="submit" value="Search" />
-</form>
-<div id="suggestions"></div>
 
 <div id="tweets">
 </div>

@@ -17,6 +17,7 @@ redis.flushdb();
 
 consumer.on('message', function(message){
   var tweet = Tweet.decode(conv(message.value, {in:'hex', out:'buffer'}));
+  d_create_at = new Date(tweet.created_at);
   for(hashtag of tweet.hashtags){
     redis.zincrby("hashtags", 1, hashtag);
     var range = _.range(1,hashtag.length+1);
@@ -29,12 +30,14 @@ consumer.on('message', function(message){
       redis.zadd('compl', 0, part);
     }
     redis.zadd('compl',0,hashtag+"*")
-    redis.sadd('hashtag-to-tweet-ids#'+hashtag, tweet.id);
-    redis.set('tweet-id-to-text#'+tweet.id, tweet.text);
-    console.log("[Redis] ("+Date.now()/1+") Recorded tweet with tag: " + hashtag);
+    redis.sadd('hashtag-to-tweet-ids#'+hashtag, tweet.id_str);
+    redis.sadd('day-to-hashtag#'+d_create_at.getDay(), hashtag);
   }
+  redis.set('tweet-id-to-text#'+tweet.id_str, tweet.text);
   var time_zone = "(None)";
-  if (tweet.user.time_zone){ time_zone = tweet.user.time_zone; }
-  redis.zincrby("time_zones", 1, time_zone.toUpperCase());
-  redis.zincrby("locations", 1, tweet.user.location);
+  if (tweet.user.time_zone){
+    time_zone = tweet.user.time_zone;
+    redis.zincrby("time_zones", 1, time_zone.toUpperCase());
+  }
+  console.log("[Redis] ("+Date.now()/1+") Recorded tweet: " + tweet.id_str);
 });

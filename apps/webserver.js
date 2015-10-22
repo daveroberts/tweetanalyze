@@ -52,6 +52,10 @@ app.get('/stats', function(req, res){
     }
     redis.sinter("", function(err, intersection){
       res.render('stats', {topTags: topTags, allDays: intersection})
+    redis.smembers('day-to-hashtag#5', function(err, fridayTags){
+      redis.smembers('day-to-hashtag#6', function(err, saturdayTags){
+        res.render('stats', {topTags: topTags, fridayTags: fridayTags, saturdayTags: saturdayTags});
+      });
     });
   });
 });
@@ -81,7 +85,6 @@ app.get('/suggestions', function(req, res){
   var max = 10;
   var rangelen = 50; // keep this under MTU
   var q = req.query.q;
-  console.log("q: "+q);
   var suggestions = [];
   var nomore = false;
   redis.zrank('compl', q, function(err,rank){
@@ -92,14 +95,13 @@ app.get('/suggestions', function(req, res){
     },function(done){
       // this code is called again and again
       redis.zrange('compl',rank,rank+rangelen-1, function(err,range){
-        console.log("Err: "+err);
         if (err){
+          console.log("Err: "+err);
           res.send("[]");
           return;
         }
         rank = rank + rangelen;
         for(i in range){
-          console.log("i: "+i+" range[i]: "+range[i]+" index1: "+range[i].indexOf(q)+" index2: "+range[i].indexOf("*"));
           if(range[i].indexOf(q) == 0){
             if (range[i].indexOf("*") >= 0){
               var suggest = range[i].substring(0,range[i].length-1);
