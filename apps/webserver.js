@@ -50,12 +50,8 @@ app.get('/stats', function(req, res){
       topTags.push([obj[i], obj[i+1]]);
       i = i + 2;
     }
-    redis.sinter("", function(err, intersection){
+    redis.sinter("day-to-hashtag#5", "day-to-hashtag#6", function(err, intersection){
       res.render('stats', {topTags: topTags, allDays: intersection})
-    redis.smembers('day-to-hashtag#5', function(err, fridayTags){
-      redis.smembers('day-to-hashtag#6', function(err, saturdayTags){
-        res.render('stats', {topTags: topTags, fridayTags: fridayTags, saturdayTags: saturdayTags});
-      });
     });
   });
 });
