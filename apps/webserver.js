@@ -43,17 +43,35 @@ app.post('/start', function(req, res){
 });
 
 app.get('/stats', function(req, res){
-  redis.zrevrange("hashtags", 0,9, "WITHSCORES", function(err, obj){
-    var topTags = [];
-    var len = obj.length, i=0;
-    while (i < len){
-      topTags.push([obj[i], obj[i+1]]);
-      i = i + 2;
+  async.parallel([
+    function(cb){
+      redis.zrevrange("hashtags", 0,9, "WITHSCORES", function(err, obj){
+        var topTags = [];
+        var len = obj.length, i=0;
+        while (i < len){
+          topTags.push([obj[i], obj[i+1]]);
+          i = i + 2;
+        }
+        cb(null, topTags);
+      });
+    },
+    function(cb){
+      redis.sinter("day-to-hashtag#0", "day-to-hashtag#1", "day-to-hashtag#2", "day-to-hashtag#3", "day-to-hashtag#4", "day-to-hashtag#5", "day-to-hashtag#6", function(err, intersection){
+        cb(null, intersection);
+      });
+    },
+    function(cb){
+      redis.get('numtweets', function(err, val){
+        cb(null, val);
+      });
+    }],
+    function(err, results){
+      topTags = results[0];
+      intersection = results[1];
+      numtweets = results[2];
+      res.render('stats', {numtweets: numtweets, topTags: topTags, allDays: intersection});
     }
-    redis.sinter("day-to-hashtag#5", "day-to-hashtag#6", function(err, intersection){
-      res.render('stats', {topTags: topTags, allDays: intersection})
-    });
-  });
+  );
 });
 
 var hashtag = "";

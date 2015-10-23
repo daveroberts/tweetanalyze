@@ -17,6 +17,7 @@ redis.flushdb();
 
 consumer.on('message', function(message){
   var tweet = Tweet.decode(conv(message.value, {in:'hex', out:'buffer'}));
+  redis.incrby("numtweets", 1);
   d_create_at = new Date(tweet.created_at);
   for(hashtag of tweet.hashtags){
     redis.zincrby("hashtags", 1, hashtag);
